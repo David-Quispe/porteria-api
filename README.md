@@ -4,6 +4,7 @@ API en Spring Boot que identifica en portería a estudiantes, docentes, personal
 
 - **Cómo trabajamos en equipo:** [docs/guia-equipo.md](docs/guia-equipo.md)
 - **Decisiones de diseño y contrato con el ESP32:** [docs/decisiones-fase0.md](docs/decisiones-fase0.md)
+- **Diagramas (arquitectura, base de datos, flujo de una lectura):** [docs/diagramas.md](docs/diagramas.md)
 
 ## Requisitos
 
