@@ -25,8 +25,8 @@ Cada desarrollador es dueño de módulos completos. Ser dueño significa que esc
 
 | Rol | Responsable | Módulos | Archivos en `shared/` | Además |
 | --- | --- | --- | --- | --- |
-| Dev A — flujo de acceso | David | `dispositivo`, `acceso` | `config/WebSocketConfig` | Integración con el ESP32, firmware, colección Postman del dispositivo |
-| Dev B — gestión y seguridad | (nombre) | `auth`, `persona`, `reporte` | `security/SecurityConfig` | Colección Postman de admin, datos de prueba |
+| Dev A — flujo de acceso | David (@David-Quispe) | `dispositivo`, `acceso` | `config/WebSocketConfig` | Integración con el ESP32, firmware, colección Postman del dispositivo |
+| Dev B — gestión y seguridad | @degznn | `auth`, `persona`, `reporte` | `security/SecurityConfig` | Colección Postman de admin, datos de prueba |
 | Ambos | — | — | `exception/`, `dto/`, `config/OpenApiConfig` | `pom.xml`, `application*.yml`, `README.md` |
 
 **Reglas de propiedad:**
@@ -44,11 +44,11 @@ GitHub puede aplicar esto solo con un archivo `.github/CODEOWNERS`: pide automá
 /src/**/porteria/acceso/                               @David-Quispe
 /src/main/java/pe/tecsup/porteria/shared/config/WebSocketConfig.java  @David-Quispe
 /firmware/                                             @David-Quispe
-/src/**/porteria/auth/                                 @usuarioB
-/src/**/porteria/persona/                              @usuarioB
-/src/**/porteria/reporte/                              @usuarioB
-/src/main/java/pe/tecsup/porteria/shared/security/     @usuarioB
-/src/main/resources/db/dev/                            @usuarioB
+/src/**/porteria/auth/                                 @degznn
+/src/**/porteria/persona/                              @degznn
+/src/**/porteria/reporte/                              @degznn
+/src/main/java/pe/tecsup/porteria/shared/security/     @degznn
+/src/main/resources/db/dev/                            @degznn
 ```
 
 ## 3. Preparación del entorno
