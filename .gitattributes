@@ -1,0 +1,11 @@
+# Saltos de línea iguales para todos (LF en el repo y en disco), sin importar el sistema operativo.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+/mvnw text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.xlsx binary
+*.jar binary

@@ -1,0 +1,27 @@
+# Perfil local. Lee el mismo .env que usa docker-compose, así la app y la base nunca se desincronizan.
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:postgresql://localhost:${DB_PORT:5432}/${DB_NAME:porteria}
+    username: ${DB_USER:porteria}
+    password: ${DB_PASSWORD:porteria}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    # db/dev tiene datos de prueba que nunca llegan a producción.
+    locations: classpath:db/migration,classpath:db/dev
+    # Dos ramas pueden fusionar migraciones con fechas cruzadas; en local se aplican igual.
+    out-of-order: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    pe.tecsup.porteria: DEBUG
+    org.hibernate.SQL: DEBUG

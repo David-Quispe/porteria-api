@@ -1,0 +1,37 @@
+# Configuración común a todos los perfiles.
+# Lo propio de cada entorno va en application-dev.yml o application-prod.yml.
+spring:
+  application:
+    name: porteria-api
+  profiles:
+    # Si nadie indica un perfil, se arranca en dev. En producción: SPRING_PROFILES_ACTIVE=prod
+    default: dev
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      # El esquema lo maneja Flyway; Hibernate solo verifica que las entidades coincidan con las tablas.
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

@@ -1,0 +1,23 @@
+# Perfil de producción: todo viene de variables de entorno, sin valores por defecto.
+# Si falta una variable, la app no arranca (mejor eso que arrancar con un secreto de ejemplo).
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+
+logging:
+  level:
+    root: INFO
+    pe.tecsup.porteria: INFO
