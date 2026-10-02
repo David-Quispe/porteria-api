@@ -1,5 +1,7 @@
 # API de Portería
 
+[![CI](https://github.com/David-Quispe/porteria-api/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/David-Quispe/porteria-api/actions/workflows/ci.yml)
+
 API en Spring Boot que identifica en portería a estudiantes, docentes, personal y visitantes con sticker NFC, código QR o DNI. Un ESP32 lee la credencial y la envía a la API. La API valida, registra el acceso, responde al circuito y avisa en tiempo real a la pantalla del portero.
 
 - **Cómo trabajamos en equipo:** [docs/guia-equipo.md](docs/guia-equipo.md)
@@ -40,6 +42,8 @@ Para comprobar que todo funciona:
 ```
 
 Las pruebas levantan su propio PostgreSQL con Testcontainers, así que solo necesitan Docker Desktop encendido. No usan la base de `docker compose`.
+
+En GitHub, el CI (`.github/workflows/ci.yml`) corre lo mismo en cada PR con JDK 21 y además compila el firmware.
 
 ## Estructura
 

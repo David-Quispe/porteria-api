@@ -100,7 +100,7 @@ porteria-api/
 │   ├── CODEOWNERS
 │   ├── pull_request_template.md
 │   ├── ISSUE_TEMPLATE/tarea.md
-│   └── workflows/ci.yml              (Fase 4)
+│   └── workflows/ci.yml              (D1, adelantado a la Fase 1)
 ├── firmware/esp32-porteria/          (PlatformIO, Fase 2)
 ├── postman/                          (colección compartida)
 ├── docs/                             (esta guía y decisiones-fase0.md)
@@ -219,7 +219,7 @@ La protección de ramas en un repositorio **privado** requiere GitHub Pro, que e
 Luego, en Settings → Branches → Add rule, para `main` y para `develop`:
 
 - [ ] *Require a pull request before merging*, con 1 aprobación.
-- [ ] *Require status checks to pass* (las pruebas automáticas). Se marca en la Fase 4, cuando exista el CI; antes no hay checks que elegir.
+- [ ] *Require status checks to pass* con los checks `api` y `firmware` de `.github/workflows/ci.yml`. Se marca cuando el CI ya esté en `develop`; antes no hay checks que elegir.
 - [ ] *Require conversation resolution* (todos los comentarios resueltos).
 - [ ] Desactivar *Allow force pushes* y *Allow deletions*.
 - [ ] **No** marcar *Require review from Code Owners* (ver sección 2).
@@ -409,7 +409,7 @@ La Fase 4 deja el sistema listo para funcionar fuera de sus laptops: con pruebas
 
 | ID | Tarea | Responsable | Rama | Lista cuando |
 | --- | --- | --- | --- | --- |
-| D1 | GitHub Actions: ejecutar `mvn verify` en cada PR hacia `develop` y `main`. Luego marcarlo como *status check* obligatorio (5.4) | B | `chore/ci` | Un PR con una prueba rota no se puede fusionar |
+| D1 | GitHub Actions: ejecutar `mvn verify` en cada PR hacia `develop` y `main`. Luego marcarlo como *status check* obligatorio (5.4). **Adelantada a la Fase 1 (#20)** | A | `chore/ci` | Un PR con una prueba rota no se puede fusionar |
 | D2 | Rate limit con Bucket4j: 5 intentos por minuto en `/auth/login` por IP y 30 lecturas por minuto por dispositivo | A | `feature/rate-limit` | Superar el límite devuelve 429 sin afectar a otros |
 | D3 | Logs útiles: dispositivo, método y resultado en cada lectura. Nunca DNI completo, tokens ni contraseñas | A | `chore/logs` | Una falla se rastrea solo con el log |
 | D4 | Seguridad final: CORS en prod solo para el dominio del frontend, JWT de 8 horas (un turno) y secretos solo por variables de entorno | B | `chore/seguridad-prod` | El perfil prod no arranca si falta un secreto |
@@ -579,3 +579,4 @@ Nunca usen `git push --force` en `develop` ni en `main`. La protección de ramas
 | 9 (A7, B9) | JWT del WebSocket en el frame `CONNECT`; `JwtFilter` revisa `activo` | El navegador no envía headers al abrir el WebSocket; un portero desactivado seguiría entrando 8 h |
 | 10 (C2) | Dos colecciones Postman | Evitar conflictos en un JSON grande |
 | 13 | Tres problemas nuevos | Flyway con fechas cruzadas, `mvnw` sin permiso, Docker apagado |
+| 11 (D1) | El CI se adelanta a la Fase 1 y lo hace Dev A; también compila el firmware | Los PR de la Fase 1 llegan a revisión con las pruebas ya corridas, y Dev B está en el camino crítico (B1, B2) |
