@@ -1,5 +1,4 @@
 # GitHub pide automáticamente la revisión del dueño cuando un PR toca su carpeta.
-# Reemplazar @usuarioB por el usuario de GitHub de Dev B.
 
 # Dev A — flujo de acceso (David)
 /src/**/porteria/dispositivo/                          @David-Quispe
@@ -8,8 +7,8 @@
 /firmware/                                             @David-Quispe
 
 # Dev B — gestión y seguridad
-/src/**/porteria/auth/                                 @usuarioB
-/src/**/porteria/persona/                              @usuarioB
-/src/**/porteria/reporte/                              @usuarioB
-/src/main/java/pe/tecsup/porteria/shared/security/     @usuarioB
-/src/main/resources/db/dev/                            @usuarioB
+/src/**/porteria/auth/                                 @degznn
+/src/**/porteria/persona/                              @degznn
+/src/**/porteria/reporte/                              @degznn
+/src/main/java/pe/tecsup/porteria/shared/security/     @degznn
+/src/main/resources/db/dev/                            @degznn

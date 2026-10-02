@@ -1,7 +1,7 @@
 # Decisiones de la Fase 0
 
 **Estado:** propuesta de Dev A (David), pendiente de revisar con Dev B en la sesión de Fase 0.
-Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes** de fusionarla en `develop`. Después ya no se edita.
+Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes** de crear la etiqueta `v0.0.1` (cierre de la Fase 0). Después ya no se edita. Si la V1 cambia antes de eso, cada uno recrea su base local con `docker compose down -v`.
 
 ## 1. Versiones
 
