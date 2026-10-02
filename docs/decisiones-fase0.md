@@ -58,6 +58,13 @@ Todos los enums se guardan como texto (`@Enumerated(EnumType.STRING)`) y la base
 | `MetodoId`, `Direccion`, `Resultado` | `acceso` |
 | `Rol` | `auth` |
 
+**Referencias entre módulos** (propuesta de Dev A en A2, pendiente de OK de Dev B):
+
+- Una entidad apunta a otra **de su mismo módulo** con `@ManyToOne` (por ejemplo `Credencial` → `Persona`).
+- Una entidad apunta a otra **de otro módulo** solo por su id, como `Long` (por ejemplo `RegistroAcceso.personaId`). La clave foránea sigue en la base; lo que se evita es que el código de un módulo dependa de las entidades de otro.
+- Para `acceso` no cambia nada: al validar ya tiene la `Persona` en memoria, así que el nombre para la respuesta y para el WebSocket sale de ahí.
+- Para `reporte` (B6): filtra por `personaId` con Specifications y pide los nombres a `PersonaService` en un solo viaje (por ejemplo `buscarPorIds(Set<Long>)`), no uno por fila.
+
 ## 5. Contrato con el ESP32
 
 Es la frontera entre la API y el firmware; cambiarlo obliga a cambiar los dos.
@@ -121,6 +128,7 @@ porteria:
 
 - **Visitantes:** solo el ADMIN crea personas. Propuesta: en la Fase 2, `POST /api/portero/visitantes` (módulo `persona`) crea un `VISITANTE` con vigencia de un día, y entra con su DNI sin necesitar sticker.
 - **Reporte y repositorios:** se propone que `reporte` lea `RegistroAccesoRepository` solo para consultas (Specifications), como única excepción a la regla 4.3. A2 hace que ese repositorio extienda `JpaSpecificationExecutor`.
+- **Referencias entre módulos por id** (§4): A2 ya lo aplica en `RegistroAcceso`. Si Dev B prefiere `@ManyToOne` hacia `Persona`, se cambia antes de A4.
 
 ## 9. Convenciones
 
