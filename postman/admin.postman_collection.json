@@ -1,0 +1,82 @@
+{
+  "info": {
+    "name": "Portería — Administración",
+    "description": "B3: login y consulta de sesión. Credenciales públicas solo del perfil dev. El JWT queda en la variable de colección jwt.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "username",
+      "value": "admin.dev"
+    },
+    {
+      "key": "password",
+      "value": "PorteriaDev-2026!"
+    },
+    {
+      "key": "jwt",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Iniciar sesión",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.unset(\"jwt\");",
+              "pm.test(\"Login correcto\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) { pm.collectionVariables.set(\"jwt\", pm.response.json().accessToken); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consultar sesión",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/me"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sesión válida\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Sin hash de contraseña\", () => pm.expect(pm.response.json()).not.to.have.property(\"passwordHash\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
