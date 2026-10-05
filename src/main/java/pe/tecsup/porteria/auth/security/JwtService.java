@@ -38,17 +38,30 @@ public class JwtService {
     }
 
     public String generar(Long usuarioId) {
+        return generar(usuarioId, 0);
+    }
+
+    public String generar(Long usuarioId, long version) {
         return Jwts.builder().issuer(ISSUER).subject(usuarioId.toString())
+                .claim("version", version)
                 .issuedAt(Date.from(clock.instant()))
                 .expiration(Date.from(clock.instant().plus(duracion)))
                 .signWith(key).compact();
     }
 
     public Long validarYObtenerUsuarioId(String token) {
-        String subject = Jwts.parser().verifyWith(key).requireIssuer(ISSUER)
+        return validar(token).id();
+    }
+
+    public record IdentidadJwt(Long id, long version) {}
+
+    public IdentidadJwt validar(String token) {
+        var claims = Jwts.parser().verifyWith(key).requireIssuer(ISSUER)
                 .clock(() -> Date.from(clock.instant())).build()
-                .parseSignedClaims(token).getPayload().getSubject();
-        return Long.valueOf(subject);
+                .parseSignedClaims(token).getPayload();
+        if (claims.getExpiration() == null) throw new io.jsonwebtoken.MalformedJwtException("Falta expiración");
+        Number version = claims.get("version", Number.class);
+        return new IdentidadJwt(Long.valueOf(claims.getSubject()), version == null ? 0 : version.longValue());
     }
 
     public long duracionSegundos() {

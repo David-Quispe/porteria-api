@@ -8,5 +8,7 @@ import pe.tecsup.porteria.auth.entity.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
+    long countByRolAndActivoTrue(pe.tecsup.porteria.auth.entity.Rol rol);
+
     Optional<Usuario> findByUsername(String username);
 }

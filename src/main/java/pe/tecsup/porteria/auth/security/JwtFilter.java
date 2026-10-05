@@ -45,9 +45,9 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
         try {
-            Long id = jwtService.validarYObtenerUsuarioId(header.substring(7));
-            UsuarioAutenticado usuario = usuarioService.buscarActivo(id).orElse(null);
-            if (usuario == null) {
+            var identidad = jwtService.validar(header.substring(7));
+            UsuarioAutenticado usuario = usuarioService.buscarActivo(identidad.id()).orElse(null);
+            if (usuario == null || usuario.sesionVersion() != identidad.version()) {
                 rechazar(request, response);
                 return;
             }

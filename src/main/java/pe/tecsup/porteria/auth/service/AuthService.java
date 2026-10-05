@@ -41,7 +41,7 @@ public class AuthService {
         if (usuario == null || !passwordValida || !usuario.isActivo()) {
             throw credencialesInvalidas();
         }
-        return new LoginResponse(jwt.generar(usuario.getId()), "Bearer", jwt.duracionSegundos(),
+        return new LoginResponse(jwt.generar(usuario.getId(), usuario.getSesionVersion()), "Bearer", jwt.duracionSegundos(),
                 UsuarioAutenticado.of(usuario));
     }
 
