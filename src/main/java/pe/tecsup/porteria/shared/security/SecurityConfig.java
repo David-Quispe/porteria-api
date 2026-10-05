@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(RUTAS_PUBLICAS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/fotos/**").hasAnyRole("ADMIN", "PORTERO")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/portero/**").hasAnyRole("ADMIN", "PORTERO")
                         .anyRequest().denyAll())
