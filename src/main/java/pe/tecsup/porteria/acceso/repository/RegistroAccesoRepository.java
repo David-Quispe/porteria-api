@@ -16,6 +16,8 @@ import pe.tecsup.porteria.acceso.entity.RegistroAcceso;
 public interface RegistroAccesoRepository
         extends JpaRepository<RegistroAcceso, Long>, JpaSpecificationExecutor<RegistroAcceso> {
 
+    Optional<RegistroAcceso> findFirstByOrderByFechaHoraDescIdDesc();
+
     Optional<RegistroAcceso> findFirstByDispositivoIdAndMetodoAndValorLeidoAndDireccionAndFechaHoraGreaterThanOrderByFechaHoraDesc(
             Long dispositivoId, MetodoId metodo, String valorLeido, pe.tecsup.porteria.acceso.entity.Direccion direccion, LocalDateTime desde);
 
