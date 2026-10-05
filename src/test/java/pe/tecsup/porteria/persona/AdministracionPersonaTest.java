@@ -24,7 +24,7 @@ class AdministracionPersonaTest {
     @Autowired JwtService jwt;
     String bearer() { return "Bearer " + jwt.generar(usuarios.findByUsername("admin.dev").orElseThrow().getId()); }
     String persona() throws Exception {
-        return json.writeValueAsString(Map.of("tipo","VISITANTE","dni","87654321","nombres","Ana","apellidos","Quispe",
+        return json.writeValueAsString(Map.of("tipo","VISITANTE","dni","87659991","nombres","AnaAdminPrueba","apellidos","Quispe",
                 "vigenciaInicio","2026-01-01"));
     }
     long crear() throws Exception {
@@ -34,7 +34,7 @@ class AdministracionPersonaTest {
     }
     @Test void administraPersonaYNormalizaCredencial() throws Exception {
         long id=crear();
-        mvc.perform(get("/api/admin/personas").param("q","Ana").header("Authorization",bearer()))
+        mvc.perform(get("/api/admin/personas").param("q","AnaAdminPrueba").header("Authorization",bearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
         mvc.perform(post("/api/admin/personas/"+id+"/credenciales").header("Authorization",bearer())
                 .contentType("application/json").content("{\"tipo\":\"NFC\",\"valor\":\"04:ab:cd:ef\"}"))

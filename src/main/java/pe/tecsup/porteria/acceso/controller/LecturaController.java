@@ -8,11 +8,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import pe.tecsup.porteria.acceso.dto.*;
 import pe.tecsup.porteria.acceso.service.AccesoService;
 import pe.tecsup.porteria.dispositivo.security.DispositivoAutenticado;
+import pe.tecsup.porteria.shared.security.RateLimitService;
 @RestController @RequiredArgsConstructor @Tag(name="ESP32") @SecurityRequirement(name="deviceToken")
 public class LecturaController {
     private final AccesoService service;
+    private final RateLimitService rateLimit;
     @PostMapping("/api/dispositivo/lecturas")
     public LecturaResponse leer(@AuthenticationPrincipal DispositivoAutenticado dispositivo,@Valid @RequestBody LecturaRequest request) {
+        rateLimit.lectura(dispositivo.id());
         return service.registrar(dispositivo,request);
     }
 }
