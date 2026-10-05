@@ -1,7 +1,7 @@
 # Decisiones de la Fase 0
 
 **Estado:** propuesta de Dev A (David), pendiente de revisar con Dev B en la sesión de Fase 0.
-Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes** de fusionarla en `develop`. Después ya no se edita.
+Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes** de crear la etiqueta `v0.0.1` (cierre de la Fase 0). Después ya no se edita. Si la V1 cambia antes de eso, cada uno recrea su base local con `docker compose down -v`.
 
 ## 1. Versiones
 
@@ -21,10 +21,11 @@ Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes**
 | `INACTIVO` | La persona existe pero fue desactivada | LED rojo, buzzer |
 | `VENCIDO` | Hoy está fuera de su vigencia | LED rojo, buzzer |
 | `FUERA_DE_HORARIO` | Ninguna regla de acceso cubre este día y hora (solo en ENTRADA) | LED rojo, buzzer |
+| `ENTRADA_REPETIDA` | La última circulación autorizada de la persona fue una entrada sin salida posterior | LED rojo, buzzer; alerta al portero |
 
 ## 3. Secuencia de validación (A4)
 
-0. **Lectura duplicada:** si el mismo dispositivo leyó el mismo método y valor hace menos de 5 s, se responde el resultado anterior y **no** se guarda otro registro.
+0. **Lectura duplicada:** si el mismo dispositivo leyó el mismo método, valor y dirección hace menos de 5 s, se responde el resultado anterior y **no** se guarda otro registro. Excepción: después de una entrada autorizada, la siguiente lectura de entrada se evalúa como segundo intento; si resulta `ENTRADA_REPETIDA`, los rebotes posteriores en 5 s se filtran.
 1. **Identificar a la persona:**
    - NFC o QR → `CredencialService.buscarActiva(tipo, valor)`
    - DNI → `PersonaService.buscarPorDni(dni)`
@@ -32,7 +33,8 @@ Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes**
 2. `persona.activo = false` → `INACTIVO`.
 3. Hoy fuera de `[vigencia_inicio, vigencia_fin]` → `VENCIDO`.
 4. Solo si es `ENTRADA`: si existen reglas activas para su tipo y punto, y ninguna cubre el día y la hora actuales → `FUERA_DE_HORARIO`. Si no hay reglas, no hay restricción. Nadie se queda encerrado por horario: la `SALIDA` no valida reglas.
-5. `AUTORIZADO`.
+5. Solo si es `ENTRADA`: si la última circulación autorizada de esa persona (en cualquier dispositivo o método) fue otra entrada, `ENTRADA_REPETIDA`. Una salida autorizada permite volver a entrar.
+6. `AUTORIZADO`.
 
 Salvo la lectura duplicada, todo se guarda en `registro_acceso` y publica `AccesoRegistradoEvent`.
 
@@ -57,6 +59,13 @@ Todos los enums se guardan como texto (`@Enumerated(EnumType.STRING)`) y la base
 | `Punto` | `dispositivo` |
 | `MetodoId`, `Direccion`, `Resultado` | `acceso` |
 | `Rol` | `auth` |
+
+**Referencias entre módulos** (propuesta de Dev A en A2, pendiente de OK de Dev B):
+
+- Una entidad apunta a otra **de su mismo módulo** con `@ManyToOne` (por ejemplo `Credencial` → `Persona`).
+- Una entidad apunta a otra **de otro módulo** solo por su id, como `Long` (por ejemplo `RegistroAcceso.personaId`). La clave foránea sigue en la base; lo que se evita es que el código de un módulo dependa de las entidades de otro.
+- Para `acceso` no cambia nada: al validar ya tiene la `Persona` en memoria, así que el nombre para la respuesta y para el WebSocket sale de ahí.
+- Para `reporte` (B6): filtra por `personaId` con Specifications y pide los nombres a `PersonaService` en un solo viaje (por ejemplo `buscarPorIds(Set<Long>)`), no uno por fila.
 
 ## 5. Contrato con el ESP32
 
@@ -121,6 +130,7 @@ porteria:
 
 - **Visitantes:** solo el ADMIN crea personas. Propuesta: en la Fase 2, `POST /api/portero/visitantes` (módulo `persona`) crea un `VISITANTE` con vigencia de un día, y entra con su DNI sin necesitar sticker.
 - **Reporte y repositorios:** se propone que `reporte` lea `RegistroAccesoRepository` solo para consultas (Specifications), como única excepción a la regla 4.3. A2 hace que ese repositorio extienda `JpaSpecificationExecutor`.
+- **Referencias entre módulos por id** (§4): A2 ya lo aplica en `RegistroAcceso`. Si Dev B prefiere `@ManyToOne` hacia `Persona`, se cambia antes de A4.
 
 ## 9. Convenciones
 

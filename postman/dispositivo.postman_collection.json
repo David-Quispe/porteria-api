@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Portería — Dispositivo",
+    "description": "Usa el token de dispositivo del entorno. Las lecturas de ejemplo corresponden a los datos ficticios del perfil dev.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Ping",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Token",
+            "value": "{{deviceToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/dispositivo/ping"
+      }
+    },
+    {
+      "name": "Lectura NFC",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Token",
+            "value": "{{deviceToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"metodo\": \"NFC\",\n  \"valor\": \"04AA0001\",\n  \"direccion\": \"ENTRADA\"\n}"
+        },
+        "url": "{{baseUrl}}/api/dispositivo/lecturas"
+      }
+    },
+    {
+      "name": "Lectura QR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Token",
+            "value": "{{deviceToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"metodo\": \"QR\",\n  \"valor\": \"QR-DEMO-02\",\n  \"direccion\": \"ENTRADA\"\n}"
+        },
+        "url": "{{baseUrl}}/api/dispositivo/lecturas"
+      }
+    },
+    {
+      "name": "Lectura DNI",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Token",
+            "value": "{{deviceToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"metodo\": \"DNI\",\n  \"valor\": \"90000001\",\n  \"direccion\": \"ENTRADA\"\n}"
+        },
+        "url": "{{baseUrl}}/api/dispositivo/lecturas"
+      }
+    }
+  ]
+}
