@@ -97,7 +97,7 @@ class SecurityIntegrationTest {
     @Test
     void jwtDelPanelNoAutorizaDispositivos() throws Exception {
         mvc.perform(get("/api/dispositivo/ping").header("Authorization", "Bearer " + token(Rol.ADMIN)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

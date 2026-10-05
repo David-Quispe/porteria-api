@@ -25,6 +25,20 @@ import pe.tecsup.porteria.auth.service.UsuarioService;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Bean
+    @org.springframework.core.annotation.Order(1)
+    SecurityFilterChain dispositivos(HttpSecurity http,
+            pe.tecsup.porteria.dispositivo.service.DispositivoTokenService tokens, SecurityErrorHandler errors) throws Exception {
+        return http.securityMatcher("/api/dispositivo/**")
+                .csrf(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable).requestCache(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint(errors).accessDeniedHandler(errors))
+                .authorizeHttpRequests(a -> a.anyRequest().hasAuthority("DEVICE"))
+                .addFilterBefore(new pe.tecsup.porteria.dispositivo.security.DeviceTokenFilter(tokens, errors),
+                        UsernamePasswordAuthenticationFilter.class).build();
+    }
+
     private static final String[] RUTAS_PUBLICAS = {
             "/actuator/health/**",
             "/swagger-ui.html",
@@ -33,6 +47,7 @@ public class SecurityConfig {
     };
 
     @Bean
+    @org.springframework.core.annotation.Order(2)
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
             UsuarioService usuarioService, SecurityErrorHandler errors) throws Exception {
         http
