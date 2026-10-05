@@ -2,6 +2,7 @@ package pe.tecsup.porteria.acceso;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import java.time.*;
 import java.io.*;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.data.domain.PageRequest;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import pe.tecsup.porteria.TestcontainersConfiguration;
@@ -60,5 +62,16 @@ class ReporteTurnoTest {
                 .param("dispositivoId",dispositivoId.toString())).andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(2));
         mvc.perform(get("/api/admin/registros/exportar").header("Authorization",admin).param("desde","2026-01-01T00:00:00")
                 .param("hasta","2026-03-01T00:00:00")).andExpect(status().isUnprocessableEntity());
+    }
+    @Test void exportacionAsyncMantieneLaAutorizacion() throws Exception {
+        String admin="Bearer "+jwt.generar(usuarios.findByUsername("admin.dev").orElseThrow().getId());
+        MvcResult pending=mvc.perform(get("/api/admin/registros/exportar").header("Authorization",admin)
+                .param("desde","2026-10-05T00:00:00").param("hasta","2026-10-05T23:59:00"))
+                .andExpect(request().asyncStarted()).andReturn();
+        mvc.perform(asyncDispatch(pending)).andExpect(status().isOk())
+                .andExpect(content().contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        try(var workbook=new XSSFWorkbook(new ByteArrayInputStream(pending.getResponse().getContentAsByteArray()))) {
+            assertThat(workbook.getSheetAt(0).getRow(0).getCell(0).getStringCellValue()).isEqualTo("ID");
+        }
     }
 }
