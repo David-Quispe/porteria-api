@@ -47,7 +47,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /** Respaldo: si un servicio no validó antes, la restricción UNIQUE o FK de la base termina aquí. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
-        log.warn("Violación de integridad en {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
+        log.warn("Violación de integridad en {}", request.getRequestURI());
         return build(HttpStatus.CONFLICT, "El dato entra en conflicto con uno ya registrado", request);
     }
 
