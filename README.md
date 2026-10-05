@@ -44,6 +44,29 @@ Consulta [el contrato de login](docs/avance-b3.md) y [la configuración de JWT](
 En producción es obligatorio `JWT_SECRET`: al menos 32 bytes aleatorios codificados en Base64.
 El usuario de ejemplo y la clave predeterminada pertenecen exclusivamente al perfil `dev`.
 
+El panel puede conectarse a `ws://localhost:8080/ws` con STOMP. Debe enviar
+`Authorization: Bearer <JWT>` en el frame `CONNECT` y suscribirse a `/topic/accesos`.
+La API envía cada acceso después de confirmar su transacción. Un cambio de contraseña
+revoca también la sesión WebSocket. `FRONTEND_ORIGIN` define el único origen web permitido.
+Los límites por instancia son 5 intentos de login por IP y 30 lecturas por dispositivo
+por minuto; al superarlos la API devuelve HTTP 429 y `Retry-After`.
+
+## Producción con Docker
+
+```bash
+cp .env.prod.example .env.prod
+# Edita .env.prod con secretos propios y el origen real del frontend.
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+```
+
+La base no publica su puerto. Las fotos y la base usan volúmenes persistentes.
+En una base vacía, configura `BOOTSTRAP_ADMIN_USERNAME` y
+`BOOTSTRAP_ADMIN_PASSWORD` (12 a 72 bytes UTF-8); se crea un único ADMIN.
+Una base ya inicializada no modifica las cuentas existentes. Usa HTTPS delante
+de la API para proteger JWT y tokens de dispositivo en tránsito. Los límites de
+peticiones residen en memoria de cada instancia; para varias réplicas necesitan
+un almacén compartido o un límite en el proxy.
+
 ## Pruebas
 
 ```bash
@@ -77,6 +100,8 @@ src/main/resources/db/
 | `SPRING_PROFILES_ACTIVE` | prod | Poner `prod` |
 | `DB_URL`, `DB_USER`, `DB_PASSWORD` | prod | Obligatorias; sin ellas la app no arranca |
 | `JWT_SECRET` | prod | Clave de firma obligatoria: al menos 32 bytes aleatorios en Base64 |
+| `FRONTEND_ORIGIN` | prod | Origen exacto autorizado para CORS y WebSocket |
+| `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_PASSWORD` | prod | Administrador inicial, obligatorio si la base está vacía |
 | `SWAGGER_ENABLED` | prod | `true` para mostrar Swagger en producción (por defecto `false`) |
 
 ## Problemas frecuentes
