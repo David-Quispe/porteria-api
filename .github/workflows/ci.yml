@@ -1,0 +1,79 @@
+# Pruebas automáticas en cada PR y en cada push a develop o main.
+# Los jobs "api" y "firmware" son los status checks obligatorios de la protección de ramas (guía 5.4).
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# Un push nuevo al mismo PR cancela la corrida anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: api
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      # JDK 21: la versión de referencia de la guía, aunque alguien compile local con 25.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Testcontainers usa el Docker que ya trae el runner.
+      - name: mvn verify
+        run: ./mvnw -B -ntp verify
+
+  firmware:
+    name: firmware
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      # Mientras el firmware no esté en la rama, el job pasa sin compilar.
+      - name: Buscar el proyecto del firmware
+        id: proyecto
+        run: |
+          if [ -f firmware/esp32-porteria/platformio.ini ]; then
+            echo "existe=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "existe=false" >> "$GITHUB_OUTPUT"
+            echo "No hay firmware en esta rama; nada que compilar."
+          fi
+
+      - uses: actions/setup-python@v7
+        if: steps.proyecto.outputs.existe == 'true'
+        with:
+          python-version: '3.12'
+
+      - uses: actions/cache@v6
+        if: steps.proyecto.outputs.existe == 'true'
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: platformio-${{ runner.os }}-${{ hashFiles('firmware/esp32-porteria/platformio.ini') }}
+
+      - name: Instalar PlatformIO
+        if: steps.proyecto.outputs.existe == 'true'
+        run: pip install platformio
+
+      # secrets.h no está en Git: se compila con los valores de ejemplo.
+      - name: pio run
+        if: steps.proyecto.outputs.existe == 'true'
+        working-directory: firmware/esp32-porteria
+        run: |
+          cp include/secrets.example.h include/secrets.h
+          pio run
