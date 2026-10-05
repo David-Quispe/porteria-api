@@ -1,5 +1,9 @@
 # Perfil de producción: todo viene de variables de entorno, sin valores por defecto.
 # Si falta una variable, la app no arranca (mejor eso que arrancar con un secreto de ejemplo).
+porteria:
+  jwt:
+    secret: ${JWT_SECRET}
+
 spring:
   datasource:
     url: ${DB_URL}
