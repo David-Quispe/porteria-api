@@ -13,7 +13,9 @@ import pe.tecsup.porteria.auth.repository.UsuarioRepository;
 
 @SpringBootTest(properties = {
         "JWT_SECRET=c2VjcmV0by1kZS1wcnVlYmEtc29sby1wYXJhLXByb2ZpbGUtcHJvZA==",
-        "DB_URL=jdbc:postgresql://localhost/no-usada", "DB_USER=no-usado", "DB_PASSWORD=no-usado"
+        "DB_URL=jdbc:postgresql://localhost/no-usada", "DB_USER=no-usado", "DB_PASSWORD=no-usado",
+        "FRONTEND_ORIGIN=https://porteria.example.org",
+        "BOOTSTRAP_ADMIN_USERNAME=admin.prod.test", "BOOTSTRAP_ADMIN_PASSWORD=clave-de-prueba-segura"
 })
 @ActiveProfiles("prod")
 @Import(TestcontainersConfiguration.class)

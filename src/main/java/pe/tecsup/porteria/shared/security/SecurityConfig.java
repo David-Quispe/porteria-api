@@ -6,6 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -18,8 +19,8 @@ import pe.tecsup.porteria.auth.security.JwtService;
 import pe.tecsup.porteria.auth.service.UsuarioService;
 
 /**
- * Ensambla los filtros y los permisos del panel. Las rutas del dispositivo y WebSocket
- * quedan cerradas hasta incorporar su autenticación específica (A3 y A7).
+ * Ensambla las cadenas del panel y el dispositivo. La conexión STOMP
+ * autentica su JWT en el frame CONNECT dentro de AccesoWebSocketAuth.
  */
 @Configuration
 @EnableWebSecurity
@@ -30,6 +31,7 @@ public class SecurityConfig {
     SecurityFilterChain dispositivos(HttpSecurity http,
             pe.tecsup.porteria.dispositivo.service.DispositivoTokenService tokens, SecurityErrorHandler errors) throws Exception {
         return http.securityMatcher("/api/dispositivo/**")
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable).requestCache(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -51,6 +53,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService,
             UsuarioService usuarioService, SecurityErrorHandler errors) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -62,6 +65,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(RUTAS_PUBLICAS).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers("/ws", "/ws/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/fotos/**").hasAnyRole("ADMIN", "PORTERO")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
