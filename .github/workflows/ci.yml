@@ -1,10 +1,9 @@
-# Pruebas automáticas en cada PR y en cada push a develop o main.
+# Pruebas automáticas en cada PR (también los apilados) y en cada push a develop o main.
 # Los jobs "api" y "firmware" son los status checks obligatorios de la protección de ramas (guía 5.4).
 name: CI
 
 on:
   pull_request:
-    branches: [develop, main]
   push:
     branches: [develop, main]
 
