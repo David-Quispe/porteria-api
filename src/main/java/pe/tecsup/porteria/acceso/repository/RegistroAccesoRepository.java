@@ -16,6 +16,9 @@ import pe.tecsup.porteria.acceso.entity.RegistroAcceso;
 public interface RegistroAccesoRepository
         extends JpaRepository<RegistroAcceso, Long>, JpaSpecificationExecutor<RegistroAcceso> {
 
+    Optional<RegistroAcceso> findFirstByDispositivoIdAndMetodoAndValorLeidoAndDireccionAndFechaHoraGreaterThanOrderByFechaHoraDesc(
+            Long dispositivoId, MetodoId metodo, String valorLeido, pe.tecsup.porteria.acceso.entity.Direccion direccion, LocalDateTime desde);
+
     /**
      * Filtro de lectura duplicada: la última lectura del mismo valor en el mismo dispositivo desde {@code desde}.
      * Usa el índice ix_registro_duplicado.
