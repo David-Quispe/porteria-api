@@ -7,6 +7,7 @@ API en Spring Boot que identifica en portería a estudiantes, docentes, personal
 - **Cómo trabajamos en equipo:** [docs/guia-equipo.md](docs/guia-equipo.md)
 - **Decisiones de diseño y contrato con el ESP32:** [docs/decisiones-fase0.md](docs/decisiones-fase0.md)
 - **Diagramas (arquitectura, base de datos, flujo de una lectura):** [docs/diagramas.md](docs/diagramas.md)
+- **Limitaciones para una instalación real:** [docs/limitaciones.md](docs/limitaciones.md)
 
 ## Requisitos
 
@@ -52,8 +53,8 @@ Para el ESP32, copia `firmware/esp32-porteria/include/secrets.example.h` como
 la IP de la máquina que ejecuta la API (no `localhost`) y `DEVICE_TOKEN` con el
 token de la puerta peatonal demo o uno nuevo creado desde el panel. Después,
 desde `firmware/esp32-porteria`, ejecuta `pio run -t upload` y
-`pio device monitor`. El firmware v1 lee NFC; QR y DNI se pueden ensayar con
-la colección Postman mientras se desarrolla el hardware v2. Consulta el
+`pio device monitor`. El firmware v2 lee NFC con PN532 y QR/DNI con GM65,
+permite cambiar ENTRADA/SALIDA y controla un servo. Consulta el
 [cableado PN532](firmware/esp32-porteria/README.md) antes de conectar el lector.
 Consulta [el contrato de login](docs/avance-b3.md) y [la configuración de JWT](docs/avance-b2.md).
 En producción es obligatorio `JWT_SECRET`: al menos 32 bytes aleatorios codificados en Base64.
