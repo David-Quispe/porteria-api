@@ -70,6 +70,41 @@ Para ver los eventos sin frontend, desde la raíz ejecuta `python -m http.server
 y abre `http://localhost:3000/docs/test-ws.html`. Pega el JWT obtenido en Postman;
 el navegador también cargará la foto protegida cuando exista.
 
+## Simular entradas sin ESP32
+
+Con PostgreSQL y la API encendidos en perfil `dev`, ejecuta desde la raíz del
+repositorio (Python 3.8 o superior; no necesita paquetes adicionales):
+
+```bash
+python scripts/simular_accesos.py
+```
+
+El comando inicia sesión con el administrador ficticio, simula tres lecturas
+con los tokens de los dispositivos demo y consulta el último registro tras
+cada una: Lucia Quispe por NFC en la puerta peatonal, Sofia Torres por QR en
+la misma puerta y Martin Rivera por DNI en la puerta vehicular. Verás la
+decisión `AUTORIZADO`/`abrir` en la terminal y los accesos en
+<http://localhost:5173/turno> si tienes abierto el frontend.
+
+También puedes ejecutar un solo caso o simular una salida:
+
+```bash
+python scripts/simular_accesos.py estudiante
+python scripts/simular_accesos.py docente
+python scripts/simular_accesos.py vehiculo
+python scripts/simular_accesos.py vehiculo --direccion SALIDA
+```
+
+La puerta vehicular representa al conductor que presenta su DNI; esta versión
+no reconoce placas. Las reglas de horario pueden devolver `FUERA_DE_HORARIO`
+en una entrada nocturna, que es un resultado correcto. Si repites la misma
+lectura dentro de cinco segundos, la API devuelve la decisión anterior sin
+crear otro registro. El script solo acepta una API local, pues utiliza las
+credenciales públicas del perfil `dev`. Si regeneraste los tokens o cambiaste
+el administrador de desarrollo, puedes usar las variables de entorno
+`PORTERIA_TOKEN_PEATONAL`, `PORTERIA_TOKEN_VEHICULAR`,
+`PORTERIA_DEMO_USERNAME` y `PORTERIA_DEMO_PASSWORD`.
+
 ## Producción con Docker
 
 ```bash
