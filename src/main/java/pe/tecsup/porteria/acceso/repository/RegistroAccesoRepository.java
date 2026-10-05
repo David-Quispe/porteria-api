@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import pe.tecsup.porteria.acceso.entity.MetodoId;
 import pe.tecsup.porteria.acceso.entity.RegistroAcceso;
+import pe.tecsup.porteria.acceso.entity.Resultado;
 
 /**
  * Escribir registros es exclusivo de AccesoService. El módulo reporte puede usar este repositorio
@@ -17,6 +18,8 @@ public interface RegistroAccesoRepository
         extends JpaRepository<RegistroAcceso, Long>, JpaSpecificationExecutor<RegistroAcceso> {
 
     Optional<RegistroAcceso> findFirstByOrderByFechaHoraDescIdDesc();
+
+    Optional<RegistroAcceso> findFirstByPersonaIdAndResultadoOrderByFechaHoraDescIdDesc(Long personaId, Resultado resultado);
 
     Optional<RegistroAcceso> findFirstByDispositivoIdAndMetodoAndValorLeidoAndDireccionAndFechaHoraGreaterThanOrderByFechaHoraDesc(
             Long dispositivoId, MetodoId metodo, String valorLeido, pe.tecsup.porteria.acceso.entity.Direccion direccion, LocalDateTime desde);

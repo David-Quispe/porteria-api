@@ -45,7 +45,7 @@ class AccesoFlowTest {
         return personas.saveAndFlush(p);
     }
     LecturaRequest entrada() { return new LecturaRequest(MetodoId.DNI,"87654321",Direccion.ENTRADA); }
-    @ParameterizedTest @EnumSource(Resultado.class)
+    @ParameterizedTest @EnumSource(value=Resultado.class,names="ENTRADA_REPETIDA",mode=EnumSource.Mode.EXCLUDE)
     void registraLosCincoResultados(Resultado esperado) {
         if(esperado!=Resultado.NO_AUTORIZADO) {
             var p=persona();
@@ -68,15 +68,39 @@ class AccesoFlowTest {
         assertThat(accesos.registrar(principal,new LecturaRequest(MetodoId.DNI,"87654321",Direccion.SALIDA)).resultado()).isEqualTo(Resultado.AUTORIZADO);
         assertThat(registros.count()).isEqualTo(2);
     }
-    @Test void seisLecturasSimultaneasProducenUnSoloRegistro() throws Exception {
+    @Test void entradaRepetidaSeRechazaHastaRegistrarSalida() {
+        persona();
+        assertThat(accesos.registrar(principal,entrada()).resultado()).isEqualTo(Resultado.AUTORIZADO);
+        var repetida=accesos.registrar(principal,entrada());
+        assertThat(repetida.resultado()).isEqualTo(Resultado.ENTRADA_REPETIDA);
+        assertThat(repetida.abrir()).isFalse();
+        assertThat(accesos.registrar(principal,entrada()).resultado()).isEqualTo(Resultado.ENTRADA_REPETIDA);
+        assertThat(registros.count()).isEqualTo(2);
+        assertThat(accesos.registrar(principal,new LecturaRequest(MetodoId.DNI,"87654321",Direccion.SALIDA)).resultado())
+                .isEqualTo(Resultado.AUTORIZADO);
+        assertThat(accesos.registrar(principal,entrada()).resultado()).isEqualTo(Resultado.AUTORIZADO);
+        assertThat(registros.count()).isEqualTo(4);
+    }
+    @Test void entradaRepetidaSeDetectaEnOtroDispositivo() {
+        persona();
+        var segundo=dispositivos.crear(new DispositivoRequest("Otra puerta",Punto.PEATONAL));
+        var dispositivo=dispositivoRepository.findById(segundo.dispositivo().id()).orElseThrow();
+        var otraPuerta=new DispositivoAutenticado(dispositivo.getId(),dispositivo.getTokenHash());
+        assertThat(accesos.registrar(principal,entrada()).resultado()).isEqualTo(Resultado.AUTORIZADO);
+        assertThat(accesos.registrar(otraPuerta,entrada()).resultado()).isEqualTo(Resultado.ENTRADA_REPETIDA);
+    }
+    @Test void lecturasSimultaneasSoloCreanUnaAlertaDeEntradaRepetida() throws Exception {
         persona(); CountDownLatch start=new CountDownLatch(1);
         try(var executor=Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<LecturaResponse>> futures=new ArrayList<>();
             for(int i=0;i<6;i++) futures.add(executor.submit(() -> {start.await();return accesos.registrar(principal,entrada());}));
             start.countDown();
-            for(var future:futures) assertThat(future.get(20,TimeUnit.SECONDS).resultado()).isEqualTo(Resultado.AUTORIZADO);
+            List<Resultado> resultados=new ArrayList<>();
+            for(var future:futures) resultados.add(future.get(20,TimeUnit.SECONDS).resultado());
+            assertThat(resultados).containsExactlyInAnyOrder(Resultado.AUTORIZADO,Resultado.ENTRADA_REPETIDA,
+                    Resultado.ENTRADA_REPETIDA,Resultado.ENTRADA_REPETIDA,Resultado.ENTRADA_REPETIDA,Resultado.ENTRADA_REPETIDA);
         }
-        assertThat(registros.count()).isEqualTo(1);
+        assertThat(registros.count()).isEqualTo(2);
     }
     @Test void contratoHttpValidaTokenYJson() throws Exception {
         persona();

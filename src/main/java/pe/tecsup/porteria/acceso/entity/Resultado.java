@@ -13,7 +13,9 @@ public enum Resultado {
     /** Hoy está fuera de la vigencia de la persona. */
     VENCIDO,
     /** Ninguna regla de acceso cubre este día y hora (solo en ENTRADA). */
-    FUERA_DE_HORARIO;
+    FUERA_DE_HORARIO,
+    /** Ya existe una entrada autorizada de la persona sin una salida autorizada posterior. */
+    ENTRADA_REPETIDA;
 
     /** Lo único que mira el ESP32 para abrir la barrera y prender el LED verde. */
     public boolean abre() {

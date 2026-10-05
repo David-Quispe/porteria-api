@@ -37,8 +37,13 @@ public class AccesoService {
                 dispositivo.getId(),request.metodo(),valor,request.direccion(),ahora.minusSeconds(5));
         if (anterior.isPresent()) {
             var r=anterior.get();
-            Persona p=r.getPersonaId()==null ? null : personas.buscarPorIds(java.util.Set.of(r.getPersonaId())).stream().findFirst().orElse(null);
-            return new LecturaResponse(r.getResultado(),r.getResultado().abre(),nombre(p));
+            boolean salidaPosterior=r.getResultado()==Resultado.ENTRADA_REPETIDA && r.getPersonaId()!=null
+                    && registros.findFirstByPersonaIdAndResultadoOrderByFechaHoraDescIdDesc(r.getPersonaId(),Resultado.AUTORIZADO)
+                            .map(ultimo -> ultimo.getDireccion()==Direccion.SALIDA).orElse(false);
+            if ((r.getResultado()!=Resultado.AUTORIZADO || request.direccion()!=Direccion.ENTRADA) && !salidaPosterior) {
+                Persona p=r.getPersonaId()==null ? null : personas.buscarPorIds(java.util.Set.of(r.getPersonaId())).stream().findFirst().orElse(null);
+                return new LecturaResponse(r.getResultado(),r.getResultado().abre(),nombre(p));
+            }
         }
         Persona persona=null; Long credencialId=null;
         if (request.metodo()==MetodoId.DNI) persona=personas.buscarPorDni(valor).orElse(null);
@@ -52,6 +57,9 @@ public class AccesoService {
         else if (ahora.toLocalDate().isBefore(persona.getVigenciaInicio())
                 || persona.getVigenciaFin()!=null && ahora.toLocalDate().isAfter(persona.getVigenciaFin())) resultado=Resultado.VENCIDO;
         else if (request.direccion()==Direccion.ENTRADA && !reglas.permite(persona.getTipo(),dispositivo.getPunto(),ahora)) resultado=Resultado.FUERA_DE_HORARIO;
+        else if (request.direccion()==Direccion.ENTRADA && registros
+                .findFirstByPersonaIdAndResultadoOrderByFechaHoraDescIdDesc(persona.getId(),Resultado.AUTORIZADO)
+                .map(r -> r.getDireccion()==Direccion.ENTRADA).orElse(false)) resultado=Resultado.ENTRADA_REPETIDA;
         else resultado=Resultado.AUTORIZADO;
         var registro=registros.saveAndFlush(RegistroAcceso.builder().fechaHora(ahora).dispositivoId(dispositivo.getId())
                 .personaId(persona==null?null:persona.getId()).credencialId(credencialId).metodo(request.metodo())

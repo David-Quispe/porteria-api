@@ -21,10 +21,11 @@ Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes**
 | `INACTIVO` | La persona existe pero fue desactivada | LED rojo, buzzer |
 | `VENCIDO` | Hoy está fuera de su vigencia | LED rojo, buzzer |
 | `FUERA_DE_HORARIO` | Ninguna regla de acceso cubre este día y hora (solo en ENTRADA) | LED rojo, buzzer |
+| `ENTRADA_REPETIDA` | La última circulación autorizada de la persona fue una entrada sin salida posterior | LED rojo, buzzer; alerta al portero |
 
 ## 3. Secuencia de validación (A4)
 
-0. **Lectura duplicada:** si el mismo dispositivo leyó el mismo método y valor hace menos de 5 s, se responde el resultado anterior y **no** se guarda otro registro.
+0. **Lectura duplicada:** si el mismo dispositivo leyó el mismo método, valor y dirección hace menos de 5 s, se responde el resultado anterior y **no** se guarda otro registro. Excepción: después de una entrada autorizada, la siguiente lectura de entrada se evalúa como segundo intento; si resulta `ENTRADA_REPETIDA`, los rebotes posteriores en 5 s se filtran.
 1. **Identificar a la persona:**
    - NFC o QR → `CredencialService.buscarActiva(tipo, valor)`
    - DNI → `PersonaService.buscarPorDni(dni)`
@@ -32,7 +33,8 @@ Lo que se cambie aquí se cambia también en `V1__esquema_inicial.sql` **antes**
 2. `persona.activo = false` → `INACTIVO`.
 3. Hoy fuera de `[vigencia_inicio, vigencia_fin]` → `VENCIDO`.
 4. Solo si es `ENTRADA`: si existen reglas activas para su tipo y punto, y ninguna cubre el día y la hora actuales → `FUERA_DE_HORARIO`. Si no hay reglas, no hay restricción. Nadie se queda encerrado por horario: la `SALIDA` no valida reglas.
-5. `AUTORIZADO`.
+5. Solo si es `ENTRADA`: si la última circulación autorizada de esa persona (en cualquier dispositivo o método) fue otra entrada, `ENTRADA_REPETIDA`. Una salida autorizada permite volver a entrar.
+6. `AUTORIZADO`.
 
 Salvo la lectura duplicada, todo se guarda en `registro_acceso` y publica `AccesoRegistradoEvent`.
 

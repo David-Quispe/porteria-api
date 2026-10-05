@@ -74,7 +74,7 @@ erDiagram
         varchar metodo "NFC, QR, DNI"
         varchar valor_leido
         varchar direccion "ENTRADA, SALIDA"
-        varchar resultado "5 resultados"
+        varchar resultado "6 resultados"
     }
     REGLA_ACCESO {
         bigint id PK
@@ -135,7 +135,7 @@ sequenceDiagram
 ```
 
 1. El filtro identifica al dispositivo por el hash de su token; el token nunca se guarda en claro.
-2. Una lectura repetida en menos de 5 s (sticker apoyado) devuelve el resultado anterior sin crear otro registro.
+2. Una lectura repetida en menos de 5 s (sticker apoyado) devuelve el resultado anterior sin crear otro registro, salvo la segunda entrada tras una entrada autorizada: se registra una alerta `ENTRADA_REPETIDA` y no se abre. Sus rebotes posteriores sí se filtran.
 3. Los resultados posibles y su orden de evaluación están en [decisiones-fase0.md](decisiones-fase0.md) §2 y §3.
 4. El evento al WebSocket sale **después** del commit: la pantalla nunca muestra un acceso que no quedó guardado.
 5. El ESP32 solo mira `abrir`. Si la API no responde en 3 s, prende el LED ámbar.
