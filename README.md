@@ -36,6 +36,14 @@ Para comprobar que todo funciona:
 - Swagger: <http://localhost:8080/swagger-ui.html>
 - Base de datos: `localhost:5432`, usuario y contraseña del `.env`. Flyway crea las 6 tablas al arrancar.
 
+## Autenticación del panel (B2 y B3)
+
+En desarrollo, Flyway crea el usuario `admin.dev` con contraseña de demostración `PorteriaDev-2026!`.
+Importa `postman/admin.postman_collection.json` para probar login y `/api/auth/me`.
+Consulta [el contrato de login](docs/avance-b3.md) y [la configuración de JWT](docs/avance-b2.md).
+En producción es obligatorio `JWT_SECRET`: al menos 32 bytes aleatorios codificados en Base64.
+El usuario de ejemplo y la clave predeterminada pertenecen exclusivamente al perfil `dev`.
+
 ## Pruebas
 
 ```bash
@@ -68,6 +76,7 @@ src/main/resources/db/
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` | dev | Base local; vienen del `.env` |
 | `SPRING_PROFILES_ACTIVE` | prod | Poner `prod` |
 | `DB_URL`, `DB_USER`, `DB_PASSWORD` | prod | Obligatorias; sin ellas la app no arranca |
+| `JWT_SECRET` | prod | Clave de firma obligatoria: al menos 32 bytes aleatorios en Base64 |
 | `SWAGGER_ENABLED` | prod | `true` para mostrar Swagger en producción (por defecto `false`) |
 
 ## Problemas frecuentes

@@ -1,5 +1,9 @@
 # Configuración común a todos los perfiles.
 # Lo propio de cada entorno va en application-dev.yml o application-prod.yml.
+porteria:
+  jwt:
+    duracion: PT8H
+
 spring:
   application:
     name: porteria-api
