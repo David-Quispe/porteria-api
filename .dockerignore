@@ -1,0 +1,9 @@
+.git
+target
+data
+.env*
+*.log
+.idea
+.vscode
+firmware
+informes

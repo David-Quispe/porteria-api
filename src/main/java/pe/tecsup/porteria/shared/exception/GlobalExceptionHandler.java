@@ -41,13 +41,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusiness(BusinessException ex, HttpServletRequest request) {
+        if (ex.getStatus() == HttpStatus.TOO_MANY_REQUESTS) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).header(HttpHeaders.RETRY_AFTER, "60")
+                    .body(ApiError.of(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request.getRequestURI()));
+        }
         return build(ex.getStatus(), ex.getMessage(), request);
     }
 
     /** Respaldo: si un servicio no validó antes, la restricción UNIQUE o FK de la base termina aquí. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
-        log.warn("Violación de integridad en {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
+        log.warn("Violación de integridad en {}", request.getRequestURI());
         return build(HttpStatus.CONFLICT, "El dato entra en conflicto con uno ya registrado", request);
     }
 

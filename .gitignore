@@ -33,6 +33,7 @@ build/
 
 ### Proyecto ###
 .env
+.env.prod
 data/
 *.log
 

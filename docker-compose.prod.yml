@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: porteria
+      POSTGRES_USER: porteria
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
+    volumes:
+      - porteria-db-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U porteria -d porteria"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: .
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/porteria
+      DB_USER: porteria
+      DB_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Configura FRONTEND_ORIGIN}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      PORTERIA_FOTOS_DIRECTORIO: /app/data/fotos
+    ports:
+      - "${API_PORT:-8080}:8080"
+    volumes:
+      - porteria-fotos-prod:/app/data/fotos
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  porteria-db-prod:
+  porteria-fotos-prod:
