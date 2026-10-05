@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba WebSocket — Portería</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: 1rem; }
+    input { width: 100%; box-sizing: border-box; padding: .6rem; }
+    button { margin-top: 1rem; padding: .6rem 1rem; cursor: pointer; }
+    #estado { margin: 1rem 0; }
+    li { display: flex; gap: 1rem; align-items: center; padding: .7rem 0; border-bottom: 1px solid #ddd; }
+    img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Eventos de portería</h1>
+  <p>Herramienta local de demostración. Inicia sesión antes en la colección Postman y copia su JWT.</p>
+  <label>URL WebSocket <input id="url" value="ws://localhost:8080/ws"></label>
+  <label>JWT del panel <input id="token" type="password" autocomplete="off"></label>
+  <button id="conectar">Conectar</button>
+  <button id="desconectar" disabled>Desconectar</button>
+  <p id="estado" role="status">Desconectado</p>
+  <ol id="eventos"></ol>
+  <script>
+    const url = document.querySelector("#url");
+    const token = document.querySelector("#token");
+    const estado = document.querySelector("#estado");
+    const eventos = document.querySelector("#eventos");
+    const conectar = document.querySelector("#conectar");
+    const desconectar = document.querySelector("#desconectar");
+    let socket;
+
+    function mostrar(frame) {
+      const separador = frame.indexOf("\n\n");
+      if (separador < 0) return;
+      const tipo = frame.slice(0, frame.indexOf("\n"));
+      if (tipo === "CONNECTED") {
+        socket.send("SUBSCRIBE\nid:accesos\ndestination:/topic/accesos\nack:auto\n\n\0");
+        estado.textContent = "Conectado; esperando lecturas";
+      } else if (tipo === "ERROR") {
+        estado.textContent = "Conexión rechazada; comprueba el JWT";
+        socket.close();
+      } else if (tipo === "MESSAGE") {
+        try {
+          const dato = JSON.parse(frame.slice(separador + 2));
+          const fila = document.createElement("li");
+          const detalle = document.createElement("span");
+          detalle.textContent = [
+            dato.fechaHora, dato.nombre || "Credencial desconocida",
+            dato.metodo, dato.direccion, dato.resultado
+          ].filter(Boolean).join(" · ");
+          fila.append(detalle);
+          eventos.prepend(fila);
+          if (dato.fotoUrl && dato.fotoUrl.startsWith("/fotos/")) {
+            const api = new URL(url.value.replace(/^ws/, "http"));
+            fetch(new URL(dato.fotoUrl, api), {
+              headers: {Authorization: "Bearer " + token.value.trim()}
+            }).then(respuesta => respuesta.ok ? respuesta.blob() : null)
+              .then(blob => {
+                if (!blob) return;
+                const imagen = document.createElement("img");
+                imagen.alt = "Foto de " + (dato.nombre || "persona");
+                const objeto = URL.createObjectURL(blob);
+                imagen.src = objeto;
+                imagen.onload = () => URL.revokeObjectURL(objeto);
+                fila.prepend(imagen);
+              });
+          }
+          while (eventos.children.length > 20) eventos.lastElementChild.remove();
+        } catch {
+          estado.textContent = "Evento recibido con formato inválido";
+        }
+      }
+    }
+
+    conectar.onclick = () => {
+      if (!token.value.trim()) { estado.textContent = "Ingresa un JWT"; return; }
+      socket = new WebSocket(url.value.trim());
+      conectar.disabled = true;
+      desconectar.disabled = false;
+      socket.onopen = () => {
+        const host = new URL(url.value).host;
+        socket.send("CONNECT\naccept-version:1.2\nhost:" + host +
+          "\nAuthorization:Bearer " + token.value.trim() + "\nheart-beat:0,0\n\n\0");
+        estado.textContent = "Autenticando...";
+      };
+      socket.onmessage = evento => {
+        for (const frame of evento.data.split("\0")) if (frame.trim()) mostrar(frame.trimStart());
+      };
+      socket.onerror = () => { estado.textContent = "Error de conexión"; };
+      socket.onclose = () => {
+        conectar.disabled = false;
+        desconectar.disabled = true;
+        if (estado.textContent.startsWith("Conectado")) estado.textContent = "Desconectado";
+      };
+    };
+    desconectar.onclick = () => socket?.close();
+  </script>
+</body>
+</html>

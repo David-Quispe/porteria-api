@@ -65,6 +65,9 @@ La API envía cada acceso después de confirmar su transacción. Un cambio de co
 revoca también la sesión WebSocket. `FRONTEND_ORIGIN` define el único origen web permitido.
 Los límites por instancia (Bucket4j) son 5 intentos de login por IP y 30 lecturas por dispositivo
 por minuto; al superarlos la API devuelve HTTP 429 y `Retry-After`.
+Para ver los eventos sin frontend, desde la raíz ejecuta `python -m http.server 3000`
+y abre `http://localhost:3000/docs/test-ws.html`. Pega el JWT obtenido en Postman;
+el navegador también cargará la foto protegida cuando exista.
 
 ## Producción con Docker
 
