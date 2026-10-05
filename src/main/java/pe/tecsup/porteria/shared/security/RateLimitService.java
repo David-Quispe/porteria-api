@@ -4,16 +4,17 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import pe.tecsup.porteria.shared.exception.BusinessException;
 
-/** Límite por instancia: cinco logins por IP y treinta lecturas por dispositivo cada minuto. */
+/** Bucket4j por instancia: cinco logins por IP y treinta lecturas por dispositivo cada minuto. */
 @Service
 public class RateLimitService {
-    private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Limite> buckets = new ConcurrentHashMap<>();
     private final AtomicLong calls = new AtomicLong();
     private final boolean enabled;
 
@@ -35,26 +36,19 @@ public class RateLimitService {
         if (calls.incrementAndGet() % 1000 == 0) {
             buckets.entrySet().removeIf(entry -> now - entry.getValue().lastSeen > Duration.ofMinutes(2).toNanos());
         }
-        Bucket bucket = buckets.computeIfAbsent(key, ignored -> new Bucket(capacity, now));
-        synchronized (bucket) {
-            bucket.lastSeen = now;
-            double refill = (now - bucket.lastRefill) * capacity / (double) Duration.ofMinutes(1).toNanos();
-            bucket.tokens = Math.min(capacity, bucket.tokens + Math.max(0, refill));
-            bucket.lastRefill = now;
-            if (bucket.tokens < 1) throw new BusinessException(HttpStatus.TOO_MANY_REQUESTS,
-                    "Demasiadas peticiones; intenta nuevamente en un minuto");
-            bucket.tokens -= 1;
-        }
+        Limite bucket = buckets.computeIfAbsent(key, ignored -> new Limite(capacity, now));
+        bucket.lastSeen = now;
+        if (!bucket.bucket.tryConsume(1)) throw new BusinessException(HttpStatus.TOO_MANY_REQUESTS,
+                "Demasiadas peticiones; intenta nuevamente en un minuto");
     }
 
-    private static final class Bucket {
-        private double tokens;
-        private long lastRefill;
+    private static final class Limite {
+        private final Bucket bucket;
         private volatile long lastSeen;
 
-        private Bucket(int capacity, long now) {
-            tokens = capacity;
-            lastRefill = now;
+        private Limite(int capacity, long now) {
+            bucket = Bucket.builder().addLimit(limit -> limit.capacity(capacity)
+                    .refillGreedy(capacity, Duration.ofMinutes(1))).build();
             lastSeen = now;
         }
     }

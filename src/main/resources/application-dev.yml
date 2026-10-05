@@ -2,7 +2,7 @@
 # Clave pública de ejemplo SOLO para desarrollo. Producción exige JWT_SECRET propio en Base64.
 porteria:
   frontend:
-    origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+    origin: ${FRONTEND_ORIGIN:http://localhost:*}
   jwt:
     secret: ${JWT_SECRET:cG9ydGVyaWEtZGV2LXNvbG8tcHJ1ZWJhcy1uby1wcm9kdWNjaW9u}
 

@@ -6,15 +6,18 @@ import org.springframework.http.*;
 import org.springframework.core.io.*;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import pe.tecsup.porteria.persona.service.FotoService;
 @RestController @RequiredArgsConstructor @Tag(name="Fotografías") @SecurityRequirement(name="jwt")
 public class FotoController {
     private final FotoService service;
+    @Operation(summary = "Subir foto JPG o PNG, máximo 2 MB")
     @PostMapping(value="/api/admin/personas/{id}/foto",consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public Map<String,String> guardar(@PathVariable Long id,@RequestPart("file") MultipartFile file) {
         return Map.of("fotoUrl",service.guardar(id,file));
     }
+    @Operation(summary = "Consultar fotografía protegida")
     @GetMapping("/fotos/{nombre}")
     public ResponseEntity<Resource> obtener(@PathVariable String nombre) {
         var archivo=service.ruta(nombre);

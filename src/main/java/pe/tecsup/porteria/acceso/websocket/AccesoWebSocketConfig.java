@@ -21,7 +21,7 @@ public class AccesoWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins(frontendOrigin);
+        registry.addEndpoint("/ws").setAllowedOriginPatterns(frontendOrigin);
     }
 
     @Override

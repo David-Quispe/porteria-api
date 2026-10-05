@@ -14,7 +14,7 @@ public class CorsConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(@Value("${porteria.frontend.origin}") String origin) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(origin));
+        config.setAllowedOriginPatterns(List.of(origin));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Device-Token"));
         config.setExposedHeaders(List.of("Retry-After"));

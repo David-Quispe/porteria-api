@@ -1,27 +1,9 @@
 {
   "info": {
     "name": "Portería — Administración",
-    "description": "B3: login y consulta de sesión. Credenciales públicas solo del perfil dev. El JWT queda en la variable de colección jwt.",
+    "description": "Perfil dev: importa porteria.postman_environment.json. El login guarda jwt; crear dispositivo guarda deviceToken.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "username",
-      "value": "admin.dev"
-    },
-    {
-      "key": "password",
-      "value": "PorteriaDev-2026!"
-    },
-    {
-      "key": "jwt",
-      "value": ""
-    }
-  ],
   "item": [
     {
       "name": "Iniciar sesión",
@@ -45,9 +27,8 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.collectionVariables.unset(\"jwt\");",
-              "pm.test(\"Login correcto\", () => pm.response.to.have.status(200));",
-              "if (pm.response.code === 200) { pm.collectionVariables.set(\"jwt\", pm.response.json().accessToken); }"
+              "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+              "if (pm.response.code === 200) pm.environment.set('jwt', pm.response.json().accessToken);"
             ]
           }
         }
@@ -64,6 +45,74 @@
           }
         ],
         "url": "{{baseUrl}}/api/auth/me"
+      }
+    },
+    {
+      "name": "Listar personas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/personas?page=0&size=20"
+      }
+    },
+    {
+      "name": "Crear persona",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"VISITANTE\",\n  \"dni\": \"91000001\",\n  \"nombres\": \"Visitante\",\n  \"apellidos\": \"Prueba\",\n  \"vigenciaInicio\": \"2026-01-01\"\n}"
+        },
+        "url": "{{baseUrl}}/api/admin/personas"
+      }
+    },
+    {
+      "name": "Listar dispositivos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/dispositivos"
+      }
+    },
+    {
+      "name": "Crear dispositivo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Puerta prueba\",\n  \"punto\": \"PEATONAL\"\n}"
+        },
+        "url": "{{baseUrl}}/api/admin/dispositivos"
       },
       "event": [
         {
@@ -71,12 +120,64 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Sesión válida\", () => pm.response.to.have.status(200));",
-              "pm.test(\"Sin hash de contraseña\", () => pm.expect(pm.response.json()).not.to.have.property(\"passwordHash\"));"
+              "pm.test('Dispositivo creado', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.environment.set('deviceToken', pm.response.json().token);"
             ]
           }
         }
       ]
+    },
+    {
+      "name": "Listar reglas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/reglas"
+      }
+    },
+    {
+      "name": "Listar usuarios",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/usuarios"
+      }
+    },
+    {
+      "name": "Historial",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/registros?page=0&size=20"
+      }
+    },
+    {
+      "name": "Exportar Excel",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/admin/registros/exportar?desde=2026-10-01&hasta=2026-10-05"
+      }
     }
   ]
 }

@@ -34,12 +34,27 @@ Para comprobar que todo funciona:
 
 - Salud: <http://localhost:8080/actuator/health> responde `UP`.
 - Swagger: <http://localhost:8080/swagger-ui.html>
-- Base de datos: `localhost:5432`, usuario y contraseña del `.env`. Flyway crea las 6 tablas al arrancar.
+- Base de datos: `localhost:5432`, usuario y contraseña del `.env`. Flyway crea el esquema al arrancar.
 
 ## Autenticación del panel (B2 y B3)
 
 En desarrollo, Flyway crea el usuario `admin.dev` con contraseña de demostración `PorteriaDev-2026!`.
-Importa `postman/admin.postman_collection.json` para probar login y `/api/auth/me`.
+El perfil dev también carga 20 personas ficticias (cinco de cada tipo), sus credenciales,
+dos dispositivos y reglas de demostración. El token de la puerta peatonal es
+`porteria-dev-peatonal-2026`; el vehicular, `porteria-dev-vehicular-2026`.
+Para probar el circuito, importa `postman/porteria.postman_environment.json` y las
+colecciones `postman/admin.postman_collection.json` y
+`postman/dispositivo.postman_collection.json`. Ejecuta primero «Iniciar sesión»;
+el JWT se guarda automáticamente en el entorno.
+
+Para el ESP32, copia `firmware/esp32-porteria/include/secrets.example.h` como
+`firmware/esp32-porteria/include/secrets.h`. Configura WiFi, `API_BASE_URL` con
+la IP de la máquina que ejecuta la API (no `localhost`) y `DEVICE_TOKEN` con el
+token de la puerta peatonal demo o uno nuevo creado desde el panel. Después,
+desde `firmware/esp32-porteria`, ejecuta `pio run -t upload` y
+`pio device monitor`. El firmware v1 lee NFC; QR y DNI se pueden ensayar con
+la colección Postman mientras se desarrolla el hardware v2. Consulta el
+[cableado PN532](firmware/esp32-porteria/README.md) antes de conectar el lector.
 Consulta [el contrato de login](docs/avance-b3.md) y [la configuración de JWT](docs/avance-b2.md).
 En producción es obligatorio `JWT_SECRET`: al menos 32 bytes aleatorios codificados en Base64.
 El usuario de ejemplo y la clave predeterminada pertenecen exclusivamente al perfil `dev`.
@@ -48,7 +63,7 @@ El panel puede conectarse a `ws://localhost:8080/ws` con STOMP. Debe enviar
 `Authorization: Bearer <JWT>` en el frame `CONNECT` y suscribirse a `/topic/accesos`.
 La API envía cada acceso después de confirmar su transacción. Un cambio de contraseña
 revoca también la sesión WebSocket. `FRONTEND_ORIGIN` define el único origen web permitido.
-Los límites por instancia son 5 intentos de login por IP y 30 lecturas por dispositivo
+Los límites por instancia (Bucket4j) son 5 intentos de login por IP y 30 lecturas por dispositivo
 por minuto; al superarlos la API devuelve HTTP 429 y `Retry-After`.
 
 ## Producción con Docker
